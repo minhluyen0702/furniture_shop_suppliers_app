@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_pw_validator/flutter_pw_validator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:furniture_shop/Providers/Auth_reponse.dart';
+import 'package:furniture_shop/Providers/Auth_response.dart';
 import 'package:furniture_shop/Widgets/CheckValidation.dart';
 import 'package:furniture_shop/Widgets/MyMessageHandler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,8 +26,11 @@ class _SignupSupplierState extends State<SignupSupplier> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
       GlobalKey<ScaffoldMessengerState>();
+  bool strongPass = false;
   bool visiblePassword = false;
-  CollectionReference users = FirebaseFirestore.instance.collection('users');
+  final TextEditingController _pwController = TextEditingController();
+  CollectionReference suppliers = FirebaseFirestore.instance.collection('Suppliers');
+  CollectionReference checkUID = FirebaseFirestore.instance.collection('UID');
 
   void signUp() async {
     if (_formKey.currentState!.validate()) {
@@ -40,7 +44,7 @@ class _SignupSupplierState extends State<SignupSupplier> {
               .whenComplete(() => AuthRepo.sendVerificationEmail());
           _uid = AuthRepo.uid;
 
-          await users.doc(_uid).set({
+          await suppliers.doc(_uid).set({
             'name': name,
             'email': email,
             'phone': '',
@@ -50,8 +54,12 @@ class _SignupSupplierState extends State<SignupSupplier> {
             'storeCoverImage': '',
             'storeName': '',
             'sid': _uid,
-            'role': 'supplier'
+            'role': 'supplier',
+            'follower': const [],
+            'storeAddress': const[],
+
           });
+          await checkUID.doc(email).set({'uid': AuthRepo.uid});
           _formKey.currentState!.reset();
           if (context.mounted) {
             Navigator.pushReplacementNamed(context, '/Login_sup');
@@ -64,10 +72,45 @@ class _SignupSupplierState extends State<SignupSupplier> {
               processing = false;
             });
           } else if (e.code == 'email-already-in-use') {
-            MyMessageHandler.showSnackBar(
-                _scaffoldKey, 'The account already exists for that email.');
-            setState(() {
-              processing = false;
+           /* MyMessageHandler.showSnackBar(
+                _scaffoldKey, 'The account already exists for that email.');*/
+            await FirebaseFirestore.instance
+                .collection('Suppliers')
+                .doc(AuthRepo.uid)
+                .get()
+                .then((DocumentSnapshot snapshot) async {
+              if (snapshot.exists) {
+                if (snapshot.get('role') == "supplier") {
+                  await AuthRepo.signInWithEmailAndPassword(email, password);
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(
+                        context, '/Supplier_screen');
+                  }
+                }
+              } else {
+                var uID = await FirebaseFirestore.instance
+                    .collection('UID')
+                    .doc(email)
+                    .get();
+                await suppliers.doc(uID['uid']).set({
+                  'name': name,
+                  'email': email,
+                  'phone': '',
+                  'address': '',
+                  'profileimage': '',
+                  'role': 'supplier',
+                  'sid': uID['uid'],
+                  'storeLogo': '',
+                  'storeCoverImage': '',
+                  'storeName': '',
+                  'follower': const [],
+                  'storeAddress': const[],
+                });
+                _formKey.currentState!.reset();
+                if (context.mounted) {
+                  Navigator.pushReplacementNamed(context, '/Login_sup');
+                }
+              }
             });
           }
         }
@@ -229,6 +272,24 @@ class _SignupSupplierState extends State<SignupSupplier> {
                                           },
                                         )),
                                   ),
+                                  FlutterPwValidator(
+                                      width: MediaQuery.of(context).size.width,
+                                      height: 90,
+                                      minLength: 6,
+                                      uppercaseCharCount: 1,
+                                      specialCharCount: 1,
+                                      onSuccess: () {
+                                        print('Match');
+                                        setState(() {
+                                          strongPass = true;
+                                        });
+                                      },
+                                      onFail: () {
+                                        setState(() {
+                                          strongPass = false;
+                                        });
+                                      },
+                                      controller: _pwController),
                                   const SizedBox(height: 10),
                                   TextFormField(
                                     validator: (value) {

@@ -185,7 +185,7 @@ class _EditProductState extends State<EditProduct> {
                                 decimal: true),
                             decoration: decorTextForm.copyWith(
                               labelText: 'Discount',
-                              hintText: 'Set discount ...\%',
+                              hintText: 'Set discount ...%',
                             ),
                           ),
                         ),
@@ -294,7 +294,8 @@ class _EditProductState extends State<EditProduct> {
                           borderRadius: BorderRadius.circular(15),
                           child: MaterialButton(
                             onPressed: () {
-                              saveChanges();
+                              // saveChanges();
+                              MyMessageHandler.showSnackBar(_scaffoldKey, 'Feature still developing');
                             },
                             color: AppColor.black,
                             height: 41,
@@ -347,8 +348,8 @@ class _EditProductState extends State<EditProduct> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.all(6),
-                        margin: EdgeInsets.all(6),
+                        padding: const EdgeInsets.all(6),
+                        margin: const EdgeInsets.all(6),
                         constraints: BoxConstraints(
                           maxWidth: wMQ * 0.4,
                         ),
@@ -380,8 +381,8 @@ class _EditProductState extends State<EditProduct> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.all(6),
-                        margin: EdgeInsets.all(6),
+                        padding: const EdgeInsets.all(6),
+                        margin: const EdgeInsets.all(6),
                         constraints: BoxConstraints(
                           maxWidth: wMQ * 0.4,
                         ),
@@ -433,7 +434,7 @@ class _EditProductState extends State<EditProduct> {
               ),
             ),
           ),
-          collapsed: SizedBox(),
+          collapsed: const SizedBox(),
           expanded: Column(
             children: [
               Row(
@@ -563,7 +564,7 @@ class _EditProductState extends State<EditProduct> {
                         ),
                       ),
                     ),
-              Divider(
+              const Divider(
                 thickness: 2,
                 color: AppColor.grey,
               ),

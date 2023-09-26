@@ -45,7 +45,7 @@ class _UploadScreenState extends State<UploadScreen> {
       final pickedImages = await _picker.pickMultiImage(
           maxHeight: 1000, maxWidth: 1000, imageQuality: 100);
       setState(() {
-        imagesFileList = pickedImages!;
+        imagesFileList = pickedImages;
       });
     } catch (e) {
       setState(() {
@@ -110,12 +110,12 @@ class _UploadScreenState extends State<UploadScreen> {
         'proID': proID,
         'mainCategory': mainValue,
         'subCategory': subValue,
-        'price': price,
+        'price': price ,
         'inStock': quantity,
         'proName': proName,
         'prodesc': proDesc,
         'sid': FirebaseAuth.instance.currentUser!.uid,
-        'proImages': imagesUrlList!,
+        'proImages': imagesUrlList,
         'discount': discount,
       }).whenComplete(() {
         setState(() {
@@ -304,7 +304,7 @@ class _UploadScreenState extends State<UploadScreen> {
                                 decimal: true),
                             decoration: decorTextForm.copyWith(
                               labelText: 'Discount',
-                              hintText: 'Set discount ...\%',
+                              hintText: 'Set discount ...%',
                             ),
                           ),
                         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:furniture_shop/Providers/Auth_response.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Constants/Colors.dart';
 import '../Screen/4. SupplierHomeScreen/Screen/Components/Dashboard/SupStore/Edit_Product_Screen.dart';
@@ -75,14 +76,14 @@ class _ProductModelState extends State<ProductModel> {
                                   ? Text(
                                 ((1 - (onSale / 100)) *
                                     widget.products['price'])
-                                    .toString(),
+                                    .toStringAsFixed(2),
                                 style: GoogleFonts.nunito(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
                               )
-                                  : Text(''),
-                              SizedBox(width: 5),
+                                  : const Text(''),
+                              const SizedBox(width: 5),
                               Text(
                                 widget.products['price'].toStringAsFixed(2),
                                 style: onSale != 0
@@ -100,6 +101,7 @@ class _ProductModelState extends State<ProductModel> {
                           ),
                         ],
                       ),
+                      AuthRepo.uid == widget.products['sid'] ?
                       InkWell(
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(
@@ -107,7 +109,7 @@ class _ProductModelState extends State<ProductModel> {
                                   EditProduct(items: widget.products,)));
                         },
                         child: const Icon(Icons.edit),
-                      )
+                      ):  const SizedBox.shrink(),
                     ],
                   ),
                 ],
@@ -119,7 +121,7 @@ class _ProductModelState extends State<ProductModel> {
               child: Container(
                 height: 25,
                 width: 90,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColor.red,
                   borderRadius: BorderRadius.only(
                     topRight: Radius.circular(5),

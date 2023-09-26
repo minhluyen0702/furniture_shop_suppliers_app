@@ -22,18 +22,19 @@ class VisitStore extends StatefulWidget {
 class _VisitStoreState extends State<VisitStore> {
   bool following = false;
 
+
   @override
   Widget build(BuildContext context) {
     double wMQ = MediaQuery.of(context).size.width;
-    CollectionReference users =
-        FirebaseFirestore.instance.collection('users');
-    final Stream<QuerySnapshot> _productsStream = FirebaseFirestore.instance
+    CollectionReference suppliers =
+        FirebaseFirestore.instance.collection('Suppliers');
+    final Stream<QuerySnapshot> productsStream = FirebaseFirestore.instance
         .collection('products')
         .where('sid', isEqualTo: widget.supplierID)
         .snapshots();
 
     return FutureBuilder<DocumentSnapshot>(
-      future: users.doc(widget.supplierID).get(),
+      future: suppliers.doc(widget.supplierID).get(),
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.hasError) {
@@ -47,6 +48,7 @@ class _VisitStoreState extends State<VisitStore> {
         if (snapshot.connectionState == ConnectionState.done) {
           Map<String, dynamic> data =
               snapshot.data!.data() as Map<String, dynamic>;
+          List follower = data['follower'];
           return Scaffold(
             appBar: AppBar(
               elevation: 0,
@@ -120,8 +122,9 @@ class _VisitStoreState extends State<VisitStore> {
                               color: AppColor.white,
                             ),
                           ),
+
                           Text(
-                            '110 followers',
+                            '${follower.length.toString()} followers',
                             style: GoogleFonts.nunito(
                               fontSize: 15,
                               fontWeight: FontWeight.w400,
@@ -161,44 +164,14 @@ class _VisitStoreState extends State<VisitStore> {
                                 ),
                               ),
                             )
-                          : GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  following = !following;
-                                });
-                              },
-                              child: Container(
-                                  width: 110,
-                                  height: 35,
-                                  margin: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                    border: Border.all(
-                                        width: 2, color: AppColor.white),
-                                  ),
-                                  child: following == true
-                                      ? Center(
-                                          child: Text(
-                                            'Following',
-                                            style: GoogleFonts.nunito(
-                                                color: AppColor.white),
-                                          ),
-                                        )
-                                      : Center(
-                                          child: Text(
-                                            '+ Follow',
-                                            style: GoogleFonts.nunito(
-                                                color: AppColor.white),
-                                          ),
-                                        )),
-                            ),
+                          : const SizedBox(height: 35,)
                     ],
                   ),
                 ],
               ),
             ),
             body: StreamBuilder<QuerySnapshot>(
-              stream: _productsStream,
+              stream: productsStream,
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasError) {

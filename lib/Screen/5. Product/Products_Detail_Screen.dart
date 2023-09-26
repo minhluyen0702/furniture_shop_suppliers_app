@@ -1,25 +1,20 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expandable/expandable.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:furniture_shop/Constants/Colors.dart';
-import 'package:furniture_shop/Providers/Cart_Provider.dart';
-import 'package:furniture_shop/Providers/Favorites_Provider.dart';
 import 'package:furniture_shop/Widgets/AppBarButton.dart';
-import 'package:furniture_shop/Widgets/MyMessageHandler.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:staggered_grid_view_flutter/widgets/staggered_grid_view.dart';
 import 'package:staggered_grid_view_flutter/widgets/staggered_tile.dart';
 import '../../Models/Product_model.dart';
+import '../../Providers/Auth_response.dart';
+import '../4. SupplierHomeScreen/Screen/Components/Dashboard/SupStore/Edit_Product_Screen.dart';
 import '../4. SupplierHomeScreen/Screen/Components/SearchScreen.dart';
 import 'Full_Screen_View_Images.dart';
 import 'Visit_Store.dart';
-import 'package:collection/collection.dart';
-import 'package:badges/badges.dart' as badges;
 
 class ProductDetailScreen extends StatefulWidget {
   final dynamic proList;
@@ -43,7 +38,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     var onSale = widget.proList['discount'];
     double wMQ = MediaQuery.of(context).size.width;
     double hMQ = MediaQuery.of(context).size.height;
-    Stream<QuerySnapshot> _productsStream = FirebaseFirestore.instance
+    Stream<QuerySnapshot> productsStream = FirebaseFirestore.instance
         .collection('products')
         .where('mainCategory', isEqualTo: widget.proList['mainCategory'])
         .where('subCategory', isEqualTo: widget.proList['subCategory'])
@@ -54,17 +49,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         .collection('reviews')
         .snapshots();
     late List<dynamic> imagesList = widget.proList['proImages'];
-    CollectionReference customers =
-        FirebaseFirestore.instance.collection('customers');
+    CollectionReference supplier =
+        FirebaseFirestore.instance.collection('Suppliers');
     final String supplierID = widget.proList['sid'];
-    var existingFavorites = context
-        .read<Favorites>()
-        .getFavoriteItems
-        .firstWhereOrNull(
-            (product) => product.documentID == widget.proList['proID']);
-    var existCart = context.read<Cart>().getItems.firstWhereOrNull(
-        (product) => product.documentID == widget.proList['proID']);
-    final _future = customers.doc(supplierID).get();
+
+    final future = supplier.doc(supplierID).get();
     return ScaffoldMessenger(
       key: _scaffoldKey,
       child: Scaffold(
@@ -196,7 +185,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         ? Text(
                                             ((1 - (onSale / 100)) *
                                                     widget.proList['price'])
-                                                .toString(),
+                                                .toStringAsFixed(2),
                                             style: GoogleFonts.nunito(
                                               fontSize: 30,
                                               fontWeight: FontWeight.w700,
@@ -216,7 +205,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                               fontWeight: FontWeight.w400,
                                             )
                                           : GoogleFonts.nunito(
-                                              fontSize: 30,
+                                              fontSize: 31 ,
                                               fontWeight: FontWeight.w700,
                                             ),
                                     ),
@@ -267,7 +256,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 10),
                     FutureBuilder<DocumentSnapshot>(
-                      future: _future,
+                      future: future,
                       builder: (BuildContext context,
                           AsyncSnapshot<DocumentSnapshot> snapshot) {
                         if (snapshot.hasError) {
@@ -294,7 +283,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         radius: 35,
                                         backgroundColor: AppColor.white,
                                         backgroundImage: NetworkImage(
-                                          data['profileimage'],
+                                          data['storeLogo'],
                                         ),
                                       ),
                                     ),
@@ -379,7 +368,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       label: '  Similar product  ',
                     ),
                     StreamBuilder<QuerySnapshot>(
-                      stream: _productsStream,
+                      stream: productsStream,
                       builder: (BuildContext context,
                           AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (snapshot.hasError) {
@@ -413,6 +402,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ],
           ),
         ),
+        bottomNavigationBar:
+        AuthRepo.uid == widget.proList['sid'] ?
+        InkWell(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(
+                builder: (context) =>
+                    EditProduct(items: widget.proList,)));
+          },
+          child: const Icon(Icons.edit),
+        ):  const SizedBox.shrink(),
       ),
     );
   }
